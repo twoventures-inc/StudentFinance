@@ -1,4 +1,4 @@
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -7,9 +7,12 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md">
-      <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+      <div className="flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-4">
-          <SidebarTrigger className="h-9 w-9" />
+          <SidebarTrigger className="h-9 w-9 flex items-center justify-center hover:bg-accent rounded-md">
+            <PanelLeft className="h-5 w-5" />
+            <span className="sr-only">Toggle Sidebar</span>
+          </SidebarTrigger>
         </div>
 
         <div className="hidden md:flex items-center gap-2 flex-1 max-w-md mx-8">
