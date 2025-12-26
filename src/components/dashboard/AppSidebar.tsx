@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   LayoutDashboard,
   ArrowUpRight,
@@ -9,6 +8,7 @@ import {
   Settings,
   GraduationCap,
 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -23,10 +23,10 @@ import {
 } from "@/components/ui/sidebar";
 
 const menuItems = [
-  { title: "Dashboard", icon: LayoutDashboard, id: "dashboard" },
-  { title: "Transactions", icon: Wallet, id: "transactions" },
-  { title: "Budgets", icon: PieChart, id: "budgets" },
-  { title: "Goals", icon: Target, id: "goals" },
+  { title: "Dashboard", icon: LayoutDashboard, id: "dashboard", path: "/" },
+  { title: "Transactions", icon: Wallet, id: "transactions", path: "/transactions" },
+  { title: "Budgets", icon: PieChart, id: "budgets", path: "/" },
+  { title: "Goals", icon: Target, id: "goals", path: "/" },
 ];
 
 const quickItems = [
@@ -41,6 +41,24 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: AppSidebarProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleMenuClick = (item: typeof menuItems[0]) => {
+    onSectionChange(item.id);
+    navigate(item.path);
+  };
+
+  const isActive = (item: typeof menuItems[0]) => {
+    if (item.path === "/transactions") {
+      return location.pathname === "/transactions";
+    }
+    if (item.path === "/" && location.pathname === "/") {
+      return activeSection === item.id;
+    }
+    return false;
+  };
+
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50">
       <SidebarHeader className="p-4 border-b border-border/50 group-data-[collapsible=icon]:p-2">
@@ -65,8 +83,8 @@ export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: Ap
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
-                    onClick={() => onSectionChange(item.id)}
-                    isActive={activeSection === item.id}
+                    onClick={() => handleMenuClick(item)}
+                    isActive={isActive(item)}
                     className="transition-all duration-200 group-data-[collapsible=icon]:justify-center"
                     tooltip={item.title}
                   >
