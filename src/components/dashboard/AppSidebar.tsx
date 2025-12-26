@@ -42,20 +42,20 @@ interface AppSidebarProps {
 
 export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: AppSidebarProps) {
   return (
-    <Sidebar className="border-r border-border/50">
-      <SidebarHeader className="p-4 border-b border-border/50">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md">
-            <GraduationCap className="h-5 w-5" />
+    <Sidebar collapsible="icon" className="border-r border-border/50">
+      <SidebarHeader className="p-4 border-b border-border/50 group-data-[collapsible=icon]:p-2">
+        <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8">
+            <GraduationCap className="h-5 w-5 group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:w-4" />
           </div>
-          <div>
+          <div className="group-data-[collapsible=icon]:hidden">
             <h2 className="font-semibold text-foreground">StudentFinance</h2>
             <p className="text-xs text-muted-foreground">Smart Money Manager</p>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-2 group-data-[collapsible=icon]:px-1">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground/70">
             Menu
@@ -67,11 +67,11 @@ export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: Ap
                   <SidebarMenuButton
                     onClick={() => onSectionChange(item.id)}
                     isActive={activeSection === item.id}
-                    className="transition-all duration-200"
+                    className="transition-all duration-200 group-data-[collapsible=icon]:justify-center"
                     tooltip={item.title}
                   >
                     <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
+                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -89,11 +89,11 @@ export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: Ap
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
                     onClick={() => onQuickAction(item.id)}
-                    className={`transition-all duration-200 hover:bg-accent/50`}
+                    className="transition-all duration-200 hover:bg-accent/50 group-data-[collapsible=icon]:justify-center"
                     tooltip={item.title}
                   >
                     <item.icon className={`h-4 w-4 ${item.color}`} />
-                    <span>{item.title}</span>
+                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -102,12 +102,12 @@ export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: Ap
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/50 p-4">
+      <SidebarFooter className="border-t border-border/50 p-4 group-data-[collapsible=icon]:p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Settings">
+            <SidebarMenuButton tooltip="Settings" className="group-data-[collapsible=icon]:justify-center">
               <Settings className="h-4 w-4" />
-              <span>Settings</span>
+              <span className="group-data-[collapsible=icon]:hidden">Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
