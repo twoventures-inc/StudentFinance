@@ -1,21 +1,15 @@
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">SF</span>
-            </div>
-            <span className="font-semibold text-lg hidden sm:inline-block">
-              StudentFinance
-            </span>
-          </div>
+          <SidebarTrigger className="h-9 w-9" />
         </div>
 
         <div className="hidden md:flex items-center gap-2 flex-1 max-w-md mx-8">
