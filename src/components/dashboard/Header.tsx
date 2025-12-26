@@ -4,7 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-export function Header() {
+interface HeaderProps {
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+}
+
+export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
@@ -21,6 +26,8 @@ export function Header() {
             <Input
               placeholder="Search transactions..."
               className="pl-9 bg-muted/50 border-0 focus-visible:ring-1"
+              value={searchQuery}
+              onChange={(e) => onSearchChange?.(e.target.value)}
             />
           </div>
         </div>
