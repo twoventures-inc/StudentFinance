@@ -84,6 +84,7 @@ const Index = () => {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [budgets, setBudgets] = useState<Budget[]>(initialBudgets);
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Form dialog states
   const [incomeFormOpen, setIncomeFormOpen] = useState(false);
@@ -91,6 +92,12 @@ const Index = () => {
   const [budgetFormOpen, setBudgetFormOpen] = useState(false);
   const [goalFormOpen, setGoalFormOpen] = useState(false);
   const [savingsFormOpen, setSavingsFormOpen] = useState(false);
+
+  // Filter transactions based on search query
+  const filteredTransactions = transactions.filter((t) =>
+    t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Calculate totals
   const totalIncome = transactions
@@ -204,7 +211,7 @@ const Index = () => {
           onQuickAction={handleQuickAction}
         />
         <SidebarInset className="flex-1">
-          <Header />
+          <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
           <main className="container px-4 py-8 md:px-6">
             {/* Welcome Section */}
@@ -358,12 +365,18 @@ const Index = () => {
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="divide-y">
-                      {transactions.slice(0, 5).map((transaction) => (
-                        <TransactionItem
-                          key={transaction.id}
-                          transaction={transaction}
-                        />
-                      ))}
+                      {filteredTransactions.length > 0 ? (
+                        filteredTransactions.slice(0, 5).map((transaction) => (
+                          <TransactionItem
+                            key={transaction.id}
+                            transaction={transaction}
+                          />
+                        ))
+                      ) : (
+                        <div className="p-4 text-center text-muted-foreground">
+                          No transactions found
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
