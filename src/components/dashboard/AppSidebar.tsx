@@ -26,7 +26,7 @@ const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, id: "dashboard", path: "/" },
   { title: "Transactions", icon: Wallet, id: "transactions", path: "/transactions" },
   { title: "Budgets", icon: PieChart, id: "budgets", path: "/budgets" },
-  { title: "Goals", icon: Target, id: "goals", path: "/" },
+  { title: "Goals", icon: Target, id: "goals", path: "/goals" },
 ];
 
 const quickItems = [
