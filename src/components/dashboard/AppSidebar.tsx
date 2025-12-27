@@ -123,7 +123,12 @@ export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: Ap
       <SidebarFooter className="border-t border-border/50 p-4 group-data-[collapsible=icon]:p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Settings" className="group-data-[collapsible=icon]:justify-center">
+            <SidebarMenuButton 
+              tooltip="Settings" 
+              className="group-data-[collapsible=icon]:justify-center"
+              onClick={() => navigate("/settings")}
+              isActive={location.pathname === "/settings"}
+            >
               <Settings className="h-4 w-4" />
               <span className="group-data-[collapsible=icon]:hidden">Settings</span>
             </SidebarMenuButton>
