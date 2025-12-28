@@ -6,85 +6,39 @@ import {
   PiggyBank,
   ChevronRight,
   Plus,
+  Loader2,
 } from "lucide-react";
+import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { Header } from "@/components/dashboard/Header";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { OverviewCard } from "@/components/dashboard/OverviewCard";
-import { TransactionItem, Transaction } from "@/components/dashboard/TransactionItem";
-import { BudgetProgress, Budget } from "@/components/dashboard/BudgetProgress";
+import { TransactionItem } from "@/components/dashboard/TransactionItem";
+import { BudgetProgress } from "@/components/dashboard/BudgetProgress";
 import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 import { QuickActions } from "@/components/dashboard/QuickActions";
-import { SavingsGoal, Goal } from "@/components/dashboard/SavingsGoal";
+import { SavingsGoal } from "@/components/dashboard/SavingsGoal";
 import { AddTransactionForm } from "@/components/forms/AddTransactionForm";
 import { AddBudgetForm } from "@/components/forms/AddBudgetForm";
 import { AddGoalForm } from "@/components/forms/AddGoalForm";
 import { AddSavingsForm } from "@/components/forms/AddSavingsForm";
-
-// Initial sample data
-const initialTransactions: Transaction[] = [
-  {
-    id: "1",
-    description: "Campus Bookstore",
-    amount: 45.99,
-    category: "Education",
-    date: "Today",
-    type: "expense",
-  },
-  {
-    id: "2",
-    description: "Part-time Salary",
-    amount: 450.0,
-    category: "Income",
-    date: "Yesterday",
-    type: "income",
-  },
-  {
-    id: "3",
-    description: "Spotify Premium",
-    amount: 9.99,
-    category: "Entertainment",
-    date: "Dec 20",
-    type: "expense",
-  },
-  {
-    id: "4",
-    description: "Uber to Campus",
-    amount: 12.5,
-    category: "Transport",
-    date: "Dec 19",
-    type: "expense",
-  },
-  {
-    id: "5",
-    description: "Chipotle Lunch",
-    amount: 14.25,
-    category: "Food",
-    date: "Dec 19",
-    type: "expense",
-  },
-];
-
-const initialBudgets: Budget[] = [
-  { id: "1", category: "Food", spent: 180, limit: 250, color: "hsl(25, 95%, 53%)" },
-  { id: "2", category: "Transport", spent: 65, limit: 100, color: "hsl(199, 89%, 48%)" },
-  { id: "3", category: "Entertainment", spent: 90, limit: 80, color: "hsl(280, 87%, 55%)" },
-  { id: "4", category: "Shopping", spent: 120, limit: 150, color: "hsl(339, 90%, 51%)" },
-];
-
-const initialGoals: Goal[] = [
-  { id: "1", name: "New Laptop", emoji: "💻", current: 650, target: 1200 },
-  { id: "2", name: "Spring Break Trip", emoji: "✈️", current: 280, target: 800 },
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useBudgets } from "@/hooks/useBudgets";
+import { useGoals } from "@/hooks/useGoals";
+import { useProfile } from "@/hooks/useProfile";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [budgets, setBudgets] = useState<Budget[]>(initialBudgets);
-  const [goals, setGoals] = useState<Goal[]>(initialGoals);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  const { transactions, isLoading: transactionsLoading, addTransaction } = useTransactions();
+  const { budgets, isLoading: budgetsLoading, addBudget } = useBudgets();
+  const { goals, isLoading: goalsLoading, addGoal, addSavings } = useGoals();
 
   // Form dialog states
   const [incomeFormOpen, setIncomeFormOpen] = useState(false);
@@ -159,48 +113,47 @@ const Index = () => {
     date: string;
     type: "income" | "expense";
   }) => {
-    const newTransaction: Transaction = {
-      id: Date.now().toString(),
+    addTransaction.mutate({
       description: data.description,
       amount: parseFloat(data.amount),
       category: data.category,
-      date: new Date(data.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      date: data.date,
       type: data.type,
-    };
-    setTransactions([newTransaction, ...transactions]);
+    });
   };
 
   const handleAddBudget = (data: { category: string; limit: string; color: string }) => {
-    const newBudget: Budget = {
-      id: Date.now().toString(),
+    addBudget.mutate({
       category: data.category,
-      spent: 0,
       limit: parseFloat(data.limit),
       color: data.color,
-    };
-    setBudgets([...budgets, newBudget]);
+    });
   };
 
   const handleAddGoal = (data: { name: string; emoji: string; target: string; current: string }) => {
-    const newGoal: Goal = {
-      id: Date.now().toString(),
+    addGoal.mutate({
       name: data.name,
       emoji: data.emoji,
       target: parseFloat(data.target),
       current: parseFloat(data.current),
-    };
-    setGoals([...goals, newGoal]);
+    });
   };
 
   const handleAddSavings = (data: { goalId: string; amount: string }) => {
-    setGoals(
-      goals.map((goal) =>
-        goal.id === data.goalId
-          ? { ...goal, current: goal.current + parseFloat(data.amount) }
-          : goal
-      )
-    );
+    addSavings.mutate({
+      goalId: data.goalId,
+      amount: parseFloat(data.amount),
+    });
   };
+
+  const isLoading = transactionsLoading || budgetsLoading || goalsLoading;
+  const firstName = profile?.firstName || user?.email?.split('@')[0] || 'there';
+
+  // Format transactions for display
+  const displayTransactions = filteredTransactions.slice(0, 5).map(t => ({
+    ...t,
+    date: format(new Date(t.date), 'MMM d'),
+  }));
 
   return (
     <SidebarProvider>
@@ -220,7 +173,7 @@ const Index = () => {
                 <SidebarTrigger className="md:hidden" />
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-                    Welcome back, Jamie! 👋
+                    Welcome back, {firstName}! 👋
                   </h1>
                   <p className="text-muted-foreground mt-1">
                     Here's what's happening with your finances today.
@@ -229,159 +182,174 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Overview Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-              <div className="animate-fade-in stagger-1 opacity-0">
-                <OverviewCard
-                  title="Total Balance"
-                  value={`$${totalBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-                  icon={<Wallet className="h-5 w-5" />}
-                  variant="default"
-                />
+            {isLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-              <div className="animate-fade-in stagger-2 opacity-0">
-                <OverviewCard
-                  title="Monthly Income"
-                  value={`$${totalIncome.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-                  icon={<TrendingUp className="h-5 w-5" />}
-                  trend={{ value: 12, isPositive: true }}
-                  variant="income"
-                />
-              </div>
-              <div className="animate-fade-in stagger-3 opacity-0">
-                <OverviewCard
-                  title="Monthly Expenses"
-                  value={`$${totalExpenses.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-                  icon={<TrendingDown className="h-5 w-5" />}
-                  trend={{ value: 5, isPositive: false }}
-                  variant="expense"
-                />
-              </div>
-              <div className="animate-fade-in stagger-4 opacity-0">
-                <OverviewCard
-                  title="Total Savings"
-                  value={`$${totalSavings.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-                  icon={<PiggyBank className="h-5 w-5" />}
-                  trend={{ value: 8, isPositive: true }}
-                  variant="savings"
-                />
-              </div>
-            </div>
+            ) : (
+              <>
+                {/* Overview Cards */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                  <div className="animate-fade-in stagger-1 opacity-0">
+                    <OverviewCard
+                      title="Total Balance"
+                      value={`$${totalBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                      icon={<Wallet className="h-5 w-5" />}
+                      variant="default"
+                    />
+                  </div>
+                  <div className="animate-fade-in stagger-2 opacity-0">
+                    <OverviewCard
+                      title="Monthly Income"
+                      value={`$${totalIncome.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                      icon={<TrendingUp className="h-5 w-5" />}
+                      variant="income"
+                    />
+                  </div>
+                  <div className="animate-fade-in stagger-3 opacity-0">
+                    <OverviewCard
+                      title="Monthly Expenses"
+                      value={`$${totalExpenses.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                      icon={<TrendingDown className="h-5 w-5" />}
+                      variant="expense"
+                    />
+                  </div>
+                  <div className="animate-fade-in stagger-4 opacity-0">
+                    <OverviewCard
+                      title="Total Savings"
+                      value={`$${totalSavings.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                      icon={<PiggyBank className="h-5 w-5" />}
+                      variant="savings"
+                    />
+                  </div>
+                </div>
 
-            {/* Main Content Grid */}
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* Left Column - Charts & Budgets */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Expense Breakdown */}
-                <Card className="shadow-card animate-fade-in stagger-2 opacity-0">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-semibold">
-                      Expense Breakdown
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ExpenseChart data={expenseData} />
-                  </CardContent>
-                </Card>
+                {/* Main Content Grid */}
+                <div className="grid gap-6 lg:grid-cols-3">
+                  {/* Left Column - Charts & Budgets */}
+                  <div className="lg:col-span-2 space-y-6">
+                    {/* Expense Breakdown */}
+                    <Card className="shadow-card animate-fade-in stagger-2 opacity-0">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg font-semibold">
+                          Expense Breakdown
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ExpenseChart data={expenseData} />
+                      </CardContent>
+                    </Card>
 
-                {/* Budget Progress */}
-                <Card className="shadow-card animate-fade-in stagger-3 opacity-0">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-lg font-semibold">
-                      Budget Progress
-                    </CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => setBudgetFormOpen(true)}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> Add Budget
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {budgets.map((budget) => (
-                      <BudgetProgress key={budget.id} budget={budget} />
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
+                    {/* Budget Progress */}
+                    <Card className="shadow-card animate-fade-in stagger-3 opacity-0">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-lg font-semibold">
+                          Budget Progress
+                        </CardTitle>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => setBudgetFormOpen(true)}
+                        >
+                          <Plus className="h-4 w-4 mr-1" /> Add Budget
+                        </Button>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {budgets.length > 0 ? (
+                          budgets.slice(0, 4).map((budget) => (
+                            <BudgetProgress key={budget.id} budget={budget} />
+                          ))
+                        ) : (
+                          <p className="text-muted-foreground text-center py-4">No budgets yet. Create one to get started!</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
 
-              {/* Right Column - Transactions & Actions */}
-              <div className="space-y-6">
-                {/* Quick Actions */}
-                <Card className="shadow-card animate-fade-in stagger-1 opacity-0">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-semibold">
-                      Quick Actions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <QuickActions onAction={handleQuickAction} />
-                  </CardContent>
-                </Card>
+                  {/* Right Column - Transactions & Actions */}
+                  <div className="space-y-6">
+                    {/* Quick Actions */}
+                    <Card className="shadow-card animate-fade-in stagger-1 opacity-0">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg font-semibold">
+                          Quick Actions
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <QuickActions onAction={handleQuickAction} />
+                      </CardContent>
+                    </Card>
 
-                {/* Savings Goals */}
-                <Card className="shadow-card animate-fade-in stagger-2 opacity-0">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-lg font-semibold">
-                      Savings Goals
-                    </CardTitle>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => setSavingsFormOpen(true)}
-                      >
-                        <Plus className="h-4 w-4 mr-1" /> Add Funds
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => setGoalFormOpen(true)}
-                      >
-                        New Goal <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {goals.map((goal) => (
-                      <SavingsGoal key={goal.id} goal={goal} />
-                    ))}
-                  </CardContent>
-                </Card>
-
-                {/* Recent Transactions */}
-                <Card className="shadow-card animate-fade-in stagger-3 opacity-0">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-lg font-semibold">
-                      Recent Transactions
-                    </CardTitle>
-                    <Button variant="ghost" size="sm" className="text-xs">
-                      See All <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <div className="divide-y">
-                      {filteredTransactions.length > 0 ? (
-                        filteredTransactions.slice(0, 5).map((transaction) => (
-                          <TransactionItem
-                            key={transaction.id}
-                            transaction={transaction}
-                          />
-                        ))
-                      ) : (
-                        <div className="p-4 text-center text-muted-foreground">
-                          No transactions found
+                    {/* Savings Goals */}
+                    <Card className="shadow-card animate-fade-in stagger-2 opacity-0">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-lg font-semibold">
+                          Savings Goals
+                        </CardTitle>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => setSavingsFormOpen(true)}
+                          >
+                            <Plus className="h-4 w-4 mr-1" /> Add Funds
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => setGoalFormOpen(true)}
+                          >
+                            New Goal <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {goals.length > 0 ? (
+                          goals.slice(0, 2).map((goal) => (
+                            <SavingsGoal key={goal.id} goal={goal} />
+                          ))
+                        ) : (
+                          <p className="text-muted-foreground text-center py-4">No goals yet. Set one to start saving!</p>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Recent Transactions */}
+                    <Card className="shadow-card animate-fade-in stagger-3 opacity-0">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-lg font-semibold">
+                          Recent Transactions
+                        </CardTitle>
+                        <Button variant="ghost" size="sm" className="text-xs" asChild>
+                          <a href="/transactions">
+                            See All <ChevronRight className="h-4 w-4 ml-1" />
+                          </a>
+                        </Button>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="divide-y">
+                          {displayTransactions.length > 0 ? (
+                            displayTransactions.map((transaction) => (
+                              <TransactionItem
+                                key={transaction.id}
+                                transaction={transaction}
+                              />
+                            ))
+                          ) : (
+                            <div className="p-4 text-center text-muted-foreground">
+                              No transactions yet
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </>
+            )}
           </main>
         </SidebarInset>
       </div>
