@@ -14,7 +14,150 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      budgets: {
+        Row: {
+          budget_limit: number
+          category: string
+          color: string
+          created_at: string | null
+          id: string
+          spent: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          budget_limit: number
+          category: string
+          color: string
+          created_at?: string | null
+          id?: string
+          spent?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          budget_limit?: number
+          category?: string
+          color?: string
+          created_at?: string | null
+          id?: string
+          spent?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          created_at: string | null
+          current_amount: number | null
+          emoji: string | null
+          id: string
+          name: string
+          target_amount: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_amount?: number | null
+          emoji?: string | null
+          id?: string
+          name: string
+          target_amount: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_amount?: number | null
+          emoji?: string | null
+          id?: string
+          name?: string
+          target_amount?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          budget_alerts: boolean | null
+          created_at: string | null
+          currency: string | null
+          date_format: string | null
+          first_name: string | null
+          goal_reminders: boolean | null
+          id: string
+          last_name: string | null
+          monthly_report: boolean | null
+          overspending_warnings: boolean | null
+          updated_at: string | null
+          weekly_report: boolean | null
+        }
+        Insert: {
+          budget_alerts?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          date_format?: string | null
+          first_name?: string | null
+          goal_reminders?: boolean | null
+          id: string
+          last_name?: string | null
+          monthly_report?: boolean | null
+          overspending_warnings?: boolean | null
+          updated_at?: string | null
+          weekly_report?: boolean | null
+        }
+        Update: {
+          budget_alerts?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          date_format?: string | null
+          first_name?: string | null
+          goal_reminders?: boolean | null
+          id?: string
+          last_name?: string | null
+          monthly_report?: boolean | null
+          overspending_warnings?: boolean | null
+          updated_at?: string | null
+          weekly_report?: boolean | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string | null
+          date: string
+          description: string
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string | null
+          date?: string
+          description: string
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string | null
+          date?: string
+          description?: string
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User, DollarSign, Bell, Save } from "lucide-react";
+import { User, DollarSign, Bell, Save, LogOut, Loader2 } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { Header } from "@/components/dashboard/Header";
@@ -17,7 +17,9 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { AddTransactionForm } from "@/components/forms/AddTransactionForm";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useTransactions } from "@/hooks/useTransactions";
 
 const currencies = [
   { code: "USD", symbol: "$", name: "US Dollar" },
@@ -34,26 +36,39 @@ export default function Settings() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [transactionType, setTransactionType] = useState<"income" | "expense">("expense");
-  const { toast } = useToast();
 
-  // Profile settings
-  const [profile, setProfile] = useState({
-    firstName: "Alex",
-    lastName: "Student",
-    email: "alex@university.edu",
+  const { user, signOut } = useAuth();
+  const { profile, isLoading, updateProfile } = useProfile();
+  const { addTransaction } = useTransactions();
+
+  // Local form state
+  const [firstName, setFirstName] = useState(profile?.firstName || "");
+  const [lastName, setLastName] = useState(profile?.lastName || "");
+  const [currency, setCurrency] = useState(profile?.currency || "USD");
+  const [dateFormat, setDateFormat] = useState(profile?.dateFormat || "MM/DD/YYYY");
+  const [notifications, setNotifications] = useState({
+    budgetAlerts: profile?.budgetAlerts ?? true,
+    goalReminders: profile?.goalReminders ?? true,
+    weeklyReport: profile?.weeklyReport ?? false,
+    monthlyReport: profile?.monthlyReport ?? true,
+    overspendingWarnings: profile?.overspendingWarnings ?? true,
   });
 
-  // Currency settings
-  const [currency, setCurrency] = useState("USD");
-  const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
-
-  // Notification settings
-  const [notifications, setNotifications] = useState({
-    budgetAlerts: true,
-    goalReminders: true,
-    weeklyReport: false,
-    monthlyReport: true,
-    overspendingWarnings: true,
+  // Update local state when profile loads
+  useState(() => {
+    if (profile) {
+      setFirstName(profile.firstName || "");
+      setLastName(profile.lastName || "");
+      setCurrency(profile.currency);
+      setDateFormat(profile.dateFormat);
+      setNotifications({
+        budgetAlerts: profile.budgetAlerts,
+        goalReminders: profile.goalReminders,
+        weeklyReport: profile.weeklyReport,
+        monthlyReport: profile.monthlyReport,
+        overspendingWarnings: profile.overspendingWarnings,
+      });
+    }
   });
 
   const handleQuickAction = (action: string) => {
@@ -67,25 +82,43 @@ export default function Settings() {
   };
 
   const handleSaveProfile = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile settings have been saved.",
-    });
+    updateProfile.mutate({ firstName, lastName });
   };
 
   const handleSaveCurrency = () => {
-    toast({
-      title: "Preferences Updated",
-      description: `Currency set to ${currencies.find(c => c.code === currency)?.name}.`,
-    });
+    updateProfile.mutate({ currency, dateFormat });
   };
 
   const handleSaveNotifications = () => {
-    toast({
-      title: "Notifications Updated",
-      description: "Your notification preferences have been saved.",
+    updateProfile.mutate({
+      budgetAlerts: notifications.budgetAlerts,
+      goalReminders: notifications.goalReminders,
+      weeklyReport: notifications.weeklyReport,
+      monthlyReport: notifications.monthlyReport,
+      overspendingWarnings: notifications.overspendingWarnings,
     });
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  if (isLoading) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <AppSidebar
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+            onQuickAction={handleQuickAction}
+          />
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -100,11 +133,17 @@ export default function Settings() {
           <main className="flex-1 p-6 overflow-auto">
             <div className="max-w-3xl mx-auto space-y-6">
               {/* Page Header */}
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-                <p className="text-muted-foreground">
-                  Manage your account preferences and notifications
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+                  <p className="text-muted-foreground">
+                    Manage your account preferences and notifications
+                  </p>
+                </div>
+                <Button variant="outline" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
               </div>
 
               {/* Profile Settings */}
@@ -119,35 +158,36 @@ export default function Settings() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={user?.email || ""}
+                      disabled
+                      className="bg-muted"
+                    />
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
                       <Input
                         id="firstName"
-                        value={profile.firstName}
-                        onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
-                        value={profile.lastName}
-                        onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profile.email}
-                      onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                    />
-                  </div>
-                  <Button onClick={handleSaveProfile}>
-                    <Save className="h-4 w-4 mr-2" />
+                  <Button onClick={handleSaveProfile} disabled={updateProfile.isPending}>
+                    {updateProfile.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                     Save Profile
                   </Button>
                 </CardContent>
@@ -198,8 +238,8 @@ export default function Settings() {
                       </Select>
                     </div>
                   </div>
-                  <Button onClick={handleSaveCurrency}>
-                    <Save className="h-4 w-4 mr-2" />
+                  <Button onClick={handleSaveCurrency} disabled={updateProfile.isPending}>
+                    {updateProfile.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                     Save Preferences
                   </Button>
                 </CardContent>
@@ -291,8 +331,8 @@ export default function Settings() {
                       }
                     />
                   </div>
-                  <Button onClick={handleSaveNotifications} className="mt-4">
-                    <Save className="h-4 w-4 mr-2" />
+                  <Button onClick={handleSaveNotifications} className="mt-4" disabled={updateProfile.isPending}>
+                    {updateProfile.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                     Save Notifications
                   </Button>
                 </CardContent>
@@ -307,9 +347,12 @@ export default function Settings() {
         onOpenChange={setShowAddTransaction}
         type={transactionType}
         onSubmit={(data) => {
-          toast({
-            title: "Transaction Added",
-            description: `${data.type === "income" ? "Income" : "Expense"} of $${data.amount} added.`,
+          addTransaction.mutate({
+            description: data.description,
+            amount: parseFloat(data.amount),
+            category: data.category,
+            date: data.date,
+            type: data.type,
           });
         }}
       />
