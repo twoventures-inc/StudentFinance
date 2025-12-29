@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useGoals, Goal } from "@/hooks/useGoals";
 import { useTransactions } from "@/hooks/useTransactions";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function Goals() {
   const [activeSection, setActiveSection] = useState("goals");
@@ -33,6 +34,7 @@ export default function Goals() {
 
   const { goals, isLoading, addGoal, addSavings, deleteGoal } = useGoals();
   const { addTransaction } = useTransactions();
+  const { currencySymbol } = useCurrency();
 
   const handleQuickAction = (action: string) => {
     if (action === "add-income") {
@@ -120,7 +122,7 @@ export default function Goals() {
                           <Target className="h-4 w-4 text-savings" />
                           Total Target
                         </CardDescription>
-                        <CardTitle className="text-2xl">${totalTarget.toLocaleString()}</CardTitle>
+                        <CardTitle className="text-2xl">{currencySymbol}{totalTarget.toLocaleString()}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <p className="text-xs text-muted-foreground">Across all goals</p>
@@ -132,7 +134,7 @@ export default function Goals() {
                           <PiggyBank className="h-4 w-4 text-savings" />
                           Total Saved
                         </CardDescription>
-                        <CardTitle className="text-2xl text-savings">${totalSaved.toLocaleString()}</CardTitle>
+                        <CardTitle className="text-2xl text-savings">{currencySymbol}{totalSaved.toLocaleString()}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <p className="text-xs text-muted-foreground">
@@ -143,7 +145,7 @@ export default function Goals() {
                     <Card>
                       <CardHeader className="pb-2">
                         <CardDescription>Remaining</CardDescription>
-                        <CardTitle className="text-2xl">${(totalTarget - totalSaved).toLocaleString()}</CardTitle>
+                        <CardTitle className="text-2xl">{currencySymbol}{(totalTarget - totalSaved).toLocaleString()}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <p className="text-xs text-muted-foreground">Still needed</p>
@@ -238,7 +240,7 @@ export default function Goals() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Goal</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{goalToDelete?.emoji} {goalToDelete?.name}"? This action cannot be undone and you'll lose ${goalToDelete?.current.toLocaleString()} in tracked savings.
+              Are you sure you want to delete "{goalToDelete?.emoji} {goalToDelete?.name}"? This action cannot be undone and you'll lose {currencySymbol}{goalToDelete?.current.toLocaleString()} in tracked savings.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

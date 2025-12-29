@@ -1,5 +1,6 @@
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export interface Goal {
   id: string;
@@ -16,6 +17,7 @@ interface SavingsGoalProps {
 
 export function SavingsGoal({ goal, className }: SavingsGoalProps) {
   const percentage = (goal.current / goal.target) * 100;
+  const { currencySymbol } = useCurrency();
 
   return (
     <div
@@ -38,8 +40,8 @@ export function SavingsGoal({ goal, className }: SavingsGoalProps) {
         className="h-2 [&>div]:bg-savings"
       />
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>${goal.current.toLocaleString()}</span>
-        <span>${goal.target.toLocaleString()}</span>
+        <span>{currencySymbol}{goal.current.toLocaleString()}</span>
+        <span>{currencySymbol}{goal.target.toLocaleString()}</span>
       </div>
     </div>
   );

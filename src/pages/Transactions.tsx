@@ -48,6 +48,7 @@ import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { AddTransactionForm } from "@/components/forms/AddTransactionForm";
 import { cn } from "@/lib/utils";
 import { useTransactions } from "@/hooks/useTransactions";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const categoryIcons: Record<string, string> = {
   Food: "🍔",
@@ -94,6 +95,7 @@ const Transactions = () => {
   const [expenseFormOpen, setExpenseFormOpen] = useState(false);
 
   const { transactions, isLoading, addTransaction } = useTransactions();
+  const { formatAmount } = useCurrency();
 
   const handleQuickAction = (action: string) => {
     if (action === "add-income") setIncomeFormOpen(true);
@@ -399,8 +401,7 @@ const Transactions = () => {
                                   : "text-expense"
                               )}
                             >
-                              {transaction.type === "income" ? "+" : "-"}$
-                              {transaction.amount.toFixed(2)}
+                              {formatAmount(transaction.amount, { showSign: true, type: transaction.type })}
                             </TableCell>
                           </TableRow>
                         ))
