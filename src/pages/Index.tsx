@@ -29,6 +29,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useGoals } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -39,6 +40,7 @@ const Index = () => {
   const { transactions, isLoading: transactionsLoading, addTransaction } = useTransactions();
   const { budgets, isLoading: budgetsLoading, addBudget } = useBudgets();
   const { goals, isLoading: goalsLoading, addGoal, addSavings } = useGoals();
+  const { formatAmount } = useCurrency();
 
   // Form dialog states
   const [incomeFormOpen, setIncomeFormOpen] = useState(false);
@@ -193,7 +195,7 @@ const Index = () => {
                   <div className="animate-fade-in stagger-1 opacity-0">
                     <OverviewCard
                       title="Total Balance"
-                      value={`$${totalBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                      value={formatAmount(totalBalance)}
                       icon={<Wallet className="h-5 w-5" />}
                       variant="default"
                     />
@@ -201,7 +203,7 @@ const Index = () => {
                   <div className="animate-fade-in stagger-2 opacity-0">
                     <OverviewCard
                       title="Monthly Income"
-                      value={`$${totalIncome.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                      value={formatAmount(totalIncome)}
                       icon={<TrendingUp className="h-5 w-5" />}
                       variant="income"
                     />
@@ -209,7 +211,7 @@ const Index = () => {
                   <div className="animate-fade-in stagger-3 opacity-0">
                     <OverviewCard
                       title="Monthly Expenses"
-                      value={`$${totalExpenses.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                      value={formatAmount(totalExpenses)}
                       icon={<TrendingDown className="h-5 w-5" />}
                       variant="expense"
                     />
@@ -217,7 +219,7 @@ const Index = () => {
                   <div className="animate-fade-in stagger-4 opacity-0">
                     <OverviewCard
                       title="Total Savings"
-                      value={`$${totalSavings.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                      value={formatAmount(totalSavings)}
                       icon={<PiggyBank className="h-5 w-5" />}
                       variant="savings"
                     />

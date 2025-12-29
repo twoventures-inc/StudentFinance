@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useBudgets, Budget } from "@/hooks/useBudgets";
 import { useTransactions } from "@/hooks/useTransactions";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function Budgets() {
   const [activeSection, setActiveSection] = useState("budgets");
@@ -31,6 +32,7 @@ export default function Budgets() {
 
   const { budgets, isLoading, addBudget, deleteBudget } = useBudgets();
   const { addTransaction } = useTransactions();
+  const { formatAmountShort } = useCurrency();
 
   const handleQuickAction = (action: string) => {
     if (action === "add-income") {
@@ -100,7 +102,7 @@ export default function Budgets() {
                     <Card>
                       <CardHeader className="pb-2">
                         <CardDescription>Total Budget</CardDescription>
-                        <CardTitle className="text-2xl">${totalBudget.toFixed(0)}</CardTitle>
+                        <CardTitle className="text-2xl">{formatAmountShort(totalBudget)}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <p className="text-xs text-muted-foreground">Monthly allocation</p>
@@ -109,7 +111,7 @@ export default function Budgets() {
                     <Card>
                       <CardHeader className="pb-2">
                         <CardDescription>Total Spent</CardDescription>
-                        <CardTitle className="text-2xl">${totalSpent.toFixed(0)}</CardTitle>
+                        <CardTitle className="text-2xl">{formatAmountShort(totalSpent)}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <p className="text-xs text-muted-foreground">

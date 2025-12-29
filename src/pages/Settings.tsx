@@ -20,16 +20,7 @@ import { AddTransactionForm } from "@/components/forms/AddTransactionForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useTransactions } from "@/hooks/useTransactions";
-
-const currencies = [
-  { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "EUR", symbol: "€", name: "Euro" },
-  { code: "GBP", symbol: "£", name: "British Pound" },
-  { code: "JPY", symbol: "¥", name: "Japanese Yen" },
-  { code: "CAD", symbol: "C$", name: "Canadian Dollar" },
-  { code: "AUD", symbol: "A$", name: "Australian Dollar" },
-  { code: "INR", symbol: "₹", name: "Indian Rupee" },
-];
+import { currencies } from "@/hooks/useCurrency";
 
 export default function Settings() {
   const [activeSection, setActiveSection] = useState("settings");

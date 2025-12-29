@@ -1,5 +1,6 @@
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export interface Budget {
   id: string;
@@ -29,6 +30,7 @@ export function BudgetProgress({ budget, className }: BudgetProgressProps) {
   const percentage = Math.min((budget.spent / budget.limit) * 100, 100);
   const isOverBudget = budget.spent > budget.limit;
   const remaining = budget.limit - budget.spent;
+  const { formatAmountShort } = useCurrency();
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -41,11 +43,11 @@ export function BudgetProgress({ budget, className }: BudgetProgressProps) {
         </div>
         <div className="text-right">
           <span className="text-sm font-semibold">
-            ${budget.spent.toFixed(0)}
+            {formatAmountShort(budget.spent)}
           </span>
           <span className="text-xs text-muted-foreground">
             {" "}
-            / ${budget.limit.toFixed(0)}
+            / {formatAmountShort(budget.limit)}
           </span>
         </div>
       </div>
@@ -68,8 +70,8 @@ export function BudgetProgress({ budget, className }: BudgetProgressProps) {
         )}
       >
         {isOverBudget
-          ? `$${Math.abs(remaining).toFixed(0)} over budget`
-          : `$${remaining.toFixed(0)} remaining`}
+          ? `${formatAmountShort(Math.abs(remaining))} over budget`
+          : `${formatAmountShort(remaining)} remaining`}
       </p>
     </div>
   );

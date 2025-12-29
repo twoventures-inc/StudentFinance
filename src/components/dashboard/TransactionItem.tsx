@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export interface Transaction {
   id: string;
@@ -28,6 +29,7 @@ const categoryIcons: Record<string, string> = {
 
 export function TransactionItem({ transaction, className }: TransactionItemProps) {
   const isIncome = transaction.type === "income";
+  const { formatAmount } = useCurrency();
 
   return (
     <div
@@ -53,7 +55,7 @@ export function TransactionItem({ transaction, className }: TransactionItemProps
           isIncome ? "text-income" : "text-expense"
         )}
       >
-        {isIncome ? "+" : "-"}${Math.abs(transaction.amount).toFixed(2)}
+        {formatAmount(transaction.amount, { showSign: true, type: transaction.type })}
       </p>
     </div>
   );
