@@ -17,7 +17,8 @@ import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { OverviewCard } from "@/components/dashboard/OverviewCard";
 import { TransactionItem } from "@/components/dashboard/TransactionItem";
 import { BudgetProgress } from "@/components/dashboard/BudgetProgress";
-import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
+import { SpendingSummary } from "@/components/dashboard/SpendingSummary";
+import { isToday, startOfMonth, endOfMonth } from "date-fns";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { SavingsGoal } from "@/components/dashboard/SavingsGoal";
 import { AddTransactionForm } from "@/components/forms/AddTransactionForm";
@@ -63,31 +64,23 @@ const Index = () => {
   const totalBalance = totalIncome - totalExpenses;
   const totalSavings = goals.reduce((sum, g) => sum + g.current, 0);
 
-  // Calculate expense breakdown
-  const expenseData = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((acc: { name: string; value: number; color: string }[], t) => {
-      const existing = acc.find((item) => item.name === t.category);
-      const categoryColors: Record<string, string> = {
-        Food: "hsl(25, 95%, 53%)",
-        Transport: "hsl(199, 89%, 48%)",
-        Entertainment: "hsl(280, 87%, 55%)",
-        Shopping: "hsl(339, 90%, 51%)",
-        Education: "hsl(168, 76%, 36%)",
-        Utilities: "hsl(45, 93%, 47%)",
-        Other: "hsl(220, 14%, 50%)",
-      };
-      if (existing) {
-        existing.value += t.amount;
-      } else {
-        acc.push({
-          name: t.category,
-          value: t.amount,
-          color: categoryColors[t.category] || categoryColors.Other,
-        });
-      }
-      return acc;
-    }, []);
+  // Calculate today's spending
+  const todaySpending = transactions
+    .filter((t) => t.type === "expense" && isToday(new Date(t.date)))
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  // Calculate this month's spending
+  const monthStart = startOfMonth(new Date());
+  const monthEnd = endOfMonth(new Date());
+  const monthlySpending = transactions
+    .filter((t) => {
+      const txDate = new Date(t.date);
+      return t.type === "expense" && txDate >= monthStart && txDate <= monthEnd;
+    })
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  // Calculate total monthly budget
+  const monthlyBudget = budgets.reduce((sum, b) => sum + b.limit, 0);
 
   const handleQuickAction = (action: string) => {
     switch (action) {
@@ -228,15 +221,19 @@ const Index = () => {
                 <div className="grid gap-6 lg:grid-cols-3">
                   {/* Left Column - Charts & Budgets */}
                   <div className="lg:col-span-2 space-y-6">
-                    {/* Expense Breakdown */}
+                    {/* Daily & Monthly Spending Summary */}
                     <Card className="shadow-card animate-fade-in stagger-2 opacity-0">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-lg font-semibold">
-                          Expense Breakdown
+                          Spending Summary
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <ExpenseChart data={expenseData} />
+                        <SpendingSummary
+                          todaySpending={todaySpending}
+                          monthlySpending={monthlySpending}
+                          monthlyBudget={monthlyBudget}
+                        />
                       </CardContent>
                     </Card>
 
