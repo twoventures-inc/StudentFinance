@@ -1,8 +1,9 @@
-import { Bell, Search, PanelLeft } from "lucide-react";
+import { Bell, Search, PanelLeft, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeaderProps {
   searchQuery?: string;
@@ -10,6 +11,8 @@ interface HeaderProps {
 }
 
 export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
+  const { signOut } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
@@ -42,6 +45,9 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
               JS
             </AvatarFallback>
           </Avatar>
+          <Button variant="ghost" size="icon" onClick={signOut} title="Logout">
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </header>
