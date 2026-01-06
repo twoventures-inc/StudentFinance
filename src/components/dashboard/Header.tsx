@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -21,7 +22,17 @@ interface HeaderProps {
 
 export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
   const { signOut, user } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
+
+  const getInitials = () => {
+    const firstInitial = profile?.firstName?.charAt(0)?.toUpperCase() || "";
+    const lastInitial = profile?.lastName?.charAt(0)?.toUpperCase() || "";
+    if (firstInitial || lastInitial) {
+      return `${firstInitial}${lastInitial}`;
+    }
+    return user?.email?.charAt(0)?.toUpperCase() || "U";
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md">
@@ -55,8 +66,8 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9 border-2 border-primary/20">
-                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                    {user?.email?.charAt(0).toUpperCase() || "U"}
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
+                    {getInitials()}
                   </AvatarFallback>
                 </Avatar>
               </Button>
