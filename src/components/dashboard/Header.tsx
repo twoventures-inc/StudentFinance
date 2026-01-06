@@ -1,4 +1,4 @@
-import { Bell, Search, PanelLeft, LogOut, User, Settings, TrendingUp, TrendingDown, Target, Wallet } from "lucide-react";
+import { Bell, Search, PanelLeft, LogOut, User, Settings, TrendingUp, TrendingDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useCurrency } from "@/hooks/useCurrency";
 import { formatDistanceToNow } from "date-fns";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 interface HeaderProps {
   searchQuery?: string;
@@ -30,6 +32,19 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
   const { transactions } = useTransactions();
   const { formatAmount } = useCurrency();
   const navigate = useNavigate();
+  
+  // Track read notification IDs in localStorage
+  const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(() => {
+    const stored = localStorage.getItem(`readNotifications_${user?.id}`);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  });
+
+  // Persist read notifications to localStorage
+  useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem(`readNotifications_${user.id}`, JSON.stringify([...readNotificationIds]));
+    }
+  }, [readNotificationIds, user?.id]);
 
   const getInitials = () => {
     const firstInitial = profile?.firstName?.charAt(0)?.toUpperCase() || "";
@@ -49,9 +64,20 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
     amount: t.amount,
     category: t.category,
     time: formatDistanceToNow(new Date(t.date), { addSuffix: true }),
+    isRead: readNotificationIds.has(t.id),
   })) || [];
 
-  const hasNotifications = recentNotifications.length > 0;
+  const unreadCount = recentNotifications.filter(n => !n.isRead).length;
+
+  const markAsRead = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setReadNotificationIds(prev => new Set([...prev, id]));
+  };
+
+  const markAllAsRead = () => {
+    const allIds = recentNotifications.map(n => n.id);
+    setReadNotificationIds(prev => new Set([...prev, ...allIds]));
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-md">
@@ -80,8 +106,13 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
-                {hasNotifications && (
-                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-expense" />
+                {unreadCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] font-bold"
+                  >
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </Badge>
                 )}
               </Button>
             </DropdownMenuTrigger>
@@ -89,9 +120,16 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium">Notifications</p>
-                  <span className="text-xs text-muted-foreground">
-                    {recentNotifications.length} recent
-                  </span>
+                  {unreadCount > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-auto py-1 px-2 text-xs text-primary hover:text-primary"
+                      onClick={markAllAsRead}
+                    >
+                      Mark all as read
+                    </Button>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -100,7 +138,9 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
                   recentNotifications.map((notification) => (
                     <DropdownMenuItem
                       key={notification.id}
-                      className="flex items-start gap-3 p-3 cursor-pointer"
+                      className={`flex items-start gap-3 p-3 cursor-pointer ${
+                        !notification.isRead ? "bg-accent/50" : ""
+                      }`}
                       onClick={() => navigate("/transactions")}
                     >
                       <div className={`mt-0.5 p-1.5 rounded-full ${
@@ -115,9 +155,21 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
                         )}
                       </div>
                       <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {notification.title}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className={`text-sm leading-none ${!notification.isRead ? "font-semibold" : "font-medium"}`}>
+                            {notification.title}
+                          </p>
+                          {!notification.isRead && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 hover:bg-primary/10"
+                              onClick={(e) => markAsRead(notification.id, e)}
+                            >
+                              <Check className="h-3 w-3 text-primary" />
+                            </Button>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground line-clamp-1">
                           {notification.description}
                         </p>
