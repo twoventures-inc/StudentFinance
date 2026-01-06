@@ -9,7 +9,9 @@ import { useNavigate } from "react-router-dom";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useCurrency } from "@/hooks/useCurrency";
 import { formatDistanceToNow } from "date-fns";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,12 +28,25 @@ interface HeaderProps {
   onSearchChange?: (query: string) => void;
 }
 
+interface RealtimeNotification {
+  id: string;
+  type: "income" | "expense";
+  title: string;
+  description: string;
+  amount: number;
+  category: string;
+  time: string;
+  isRead: boolean;
+  isNew?: boolean;
+}
+
 export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
   const { signOut, user } = useAuth();
   const { profile } = useProfile();
   const { transactions } = useTransactions();
   const { formatAmount } = useCurrency();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Track read notification IDs in localStorage
   const [readNotificationIds, setReadNotificationIds] = useState<Set<string>>(() => {
@@ -39,12 +54,76 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
     return stored ? new Set(JSON.parse(stored)) : new Set();
   });
 
+  // Track new realtime notifications that haven't been fetched yet
+  const [realtimeNotifications, setRealtimeNotifications] = useState<RealtimeNotification[]>([]);
+
   // Persist read notifications to localStorage
   useEffect(() => {
     if (user?.id) {
       localStorage.setItem(`readNotifications_${user.id}`, JSON.stringify([...readNotificationIds]));
     }
   }, [readNotificationIds, user?.id]);
+
+  // Subscribe to realtime transaction inserts
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('transactions-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newTransaction = payload.new as {
+            id: string;
+            type: string;
+            description: string;
+            amount: number;
+            category: string;
+            date: string;
+          };
+
+          // Show toast notification
+          toast({
+            title: newTransaction.type === 'income' ? '💰 Income received!' : '💸 Expense recorded',
+            description: `${newTransaction.description} - ${newTransaction.type === 'income' ? '+' : '-'}$${Number(newTransaction.amount).toFixed(2)}`,
+          });
+
+          // Add to realtime notifications (will be merged when transactions refetch)
+          const notification: RealtimeNotification = {
+            id: newTransaction.id,
+            type: newTransaction.type as "income" | "expense",
+            title: newTransaction.type === 'income' ? 'Income received' : 'Expense recorded',
+            description: newTransaction.description,
+            amount: Number(newTransaction.amount),
+            category: newTransaction.category,
+            time: 'Just now',
+            isRead: false,
+            isNew: true,
+          };
+
+          setRealtimeNotifications(prev => [notification, ...prev.filter(n => n.id !== newTransaction.id)]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, toast]);
+
+  // Clear realtime notifications when they appear in fetched transactions
+  useEffect(() => {
+    if (transactions.length > 0) {
+      const transactionIds = new Set(transactions.map(t => t.id));
+      setRealtimeNotifications(prev => prev.filter(n => !transactionIds.has(n.id)));
+    }
+  }, [transactions]);
 
   const getInitials = () => {
     const firstInitial = profile?.firstName?.charAt(0)?.toUpperCase() || "";
@@ -55,8 +134,8 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
     return user?.email?.charAt(0)?.toUpperCase() || "U";
   };
 
-  // Get recent transactions as notifications (last 5)
-  const recentNotifications = transactions?.slice(0, 5).map((t) => ({
+  // Merge realtime notifications with fetched transactions
+  const fetchedNotifications = transactions?.slice(0, 5).map((t) => ({
     id: t.id,
     type: t.type as "income" | "expense",
     title: t.type === "income" ? "Income received" : "Expense recorded",
@@ -65,7 +144,16 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
     category: t.category,
     time: formatDistanceToNow(new Date(t.date), { addSuffix: true }),
     isRead: readNotificationIds.has(t.id),
+    isNew: false,
   })) || [];
+
+  // Combine realtime and fetched, remove duplicates, limit to 5
+  const recentNotifications = [...realtimeNotifications, ...fetchedNotifications]
+    .filter((notification, index, self) => 
+      index === self.findIndex(n => n.id === notification.id)
+    )
+    .slice(0, 5)
+    .map(n => ({ ...n, isRead: readNotificationIds.has(n.id) ? true : n.isRead }));
 
   const unreadCount = recentNotifications.filter(n => !n.isRead).length;
 
