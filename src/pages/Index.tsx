@@ -216,14 +216,15 @@ const Index = () => {
                       variant="expense"
                     />
                   </div>
-                  <div className="animate-fade-in stagger-4 opacity-0">
+                  {/* uncompleted feature */}
+                  {/* <div className="animate-fade-in stagger-4 opacity-0">
                     <OverviewCard
                       title="Total Savings"
                       value={formatAmount(totalSavings)}
                       icon={<PiggyBank className="h-5 w-5" />}
                       variant="savings"
                     />
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Main Content Grid */}
@@ -284,40 +285,7 @@ const Index = () => {
                     </Card>
 
                     {/* Savings Goals */}
-                    <Card className="shadow-card animate-fade-in stagger-2 opacity-0">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-semibold">
-                          Savings Goals
-                        </CardTitle>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs"
-                            onClick={() => setSavingsFormOpen(true)}
-                          >
-                            <Plus className="h-4 w-4 mr-1" /> Add Funds
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs"
-                            onClick={() => setGoalFormOpen(true)}
-                          >
-                            New Goal <ChevronRight className="h-4 w-4 ml-1" />
-                          </Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {goals.length > 0 ? (
-                          goals.slice(0, 2).map((goal) => (
-                            <SavingsGoal key={goal.id} goal={goal} />
-                          ))
-                        ) : (
-                          <p className="text-muted-foreground text-center py-4">No goals yet. Set one to start saving!</p>
-                        )}
-                      </CardContent>
-                    </Card>
+
 
                     {/* Recent Transactions */}
                     <Card className="shadow-card animate-fade-in stagger-3 opacity-0">

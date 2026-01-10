@@ -24,14 +24,14 @@ export function QuickActions({ onAction }: QuickActionsProps) {
         <ArrowUpRight className="h-5 w-5" />
         <span className="text-xs font-medium">Add Expense</span>
       </Button>
-      <Button
+      {/* <Button
         variant="outline"
         className="h-auto py-4 flex flex-col items-center gap-2 hover:bg-savings/10 hover:border-savings/30 hover:text-savings transition-colors"
         onClick={() => onAction("set-goal")}
       >
         <Target className="h-5 w-5" />
         <span className="text-xs font-medium">Set Goal</span>
-      </Button>
+      </Button> */}
       <Button
         variant="outline"
         className="h-auto py-4 flex flex-col items-center gap-2 hover:bg-primary/10 hover:border-primary/30 hover:text-primary transition-colors"
