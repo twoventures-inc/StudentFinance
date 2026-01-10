@@ -60,7 +60,7 @@ export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: Ap
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/50">
+    <Sidebar collapsible="icon" className="border-r border-border/50" data-tour="sidebar">
       <SidebarHeader className="p-4 border-b border-border/50 group-data-[collapsible=icon]:p-2">
         <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8">
@@ -97,7 +97,7 @@ export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: Ap
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        <SidebarGroup data-tour="quick-actions">
           <SidebarGroupLabel className="text-xs uppercase tracking-wider text-muted-foreground/70">
             Quick Actions
           </SidebarGroupLabel>
@@ -120,7 +120,7 @@ export function AppSidebar({ activeSection, onSectionChange, onQuickAction }: Ap
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/50 p-4 group-data-[collapsible=icon]:p-2">
+      <SidebarFooter className="border-t border-border/50 p-4 group-data-[collapsible=icon]:p-2" data-tour="settings">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton 
