@@ -30,6 +30,10 @@ import { useBudgets } from "@/hooks/useBudgets";
 import { useGoals } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
 import { useCurrency } from "@/hooks/useCurrency";
+import { TourOverlay } from "@/components/tour/TourOverlay";
+import { TourWelcomeModal } from "@/components/tour/TourWelcomeModal";
+import { TourButton } from "@/components/tour/TourButton";
+import { TourProvider } from "@/contexts/TourContext";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -158,31 +162,32 @@ const Index = () => {
   }));
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-          onQuickAction={handleQuickAction}
-        />
-        <SidebarInset className="flex-1">
-          <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+    <TourProvider>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <AppSidebar
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+            onQuickAction={handleQuickAction}
+          />
+          <SidebarInset className="flex-1">
+            <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
-          <main className="container px-4 py-8 md:px-6">
-            {/* Welcome Section */}
-            <div className="mb-8 animate-fade-in flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger className="md:hidden" />
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-                    Welcome back, {firstName}! 👋
-                  </h1>
-                  <p className="text-muted-foreground mt-1">
-                    Here's what's happening with your finances today.
-                  </p>
+            <main className="container px-4 py-8 md:px-6">
+              {/* Welcome Section */}
+              <div className="mb-8 animate-fade-in flex items-center justify-between" data-tour="welcome">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger className="md:hidden" />
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+                      Welcome back, {firstName}! 👋
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                      Here's what's happening with your finances today.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
             {isLoading ? (
               <div className="flex items-center justify-center py-20">
@@ -191,7 +196,7 @@ const Index = () => {
             ) : (
               <>
                 {/* Overview Cards */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8" data-tour="overview-cards">
                   <div className="animate-fade-in stagger-1 opacity-0">
                     <OverviewCard
                       title="Total Balance"
@@ -232,7 +237,7 @@ const Index = () => {
                   {/* Left Column - Charts & Budgets */}
                   <div className="lg:col-span-2 space-y-6">
                     {/* Expense Breakdown */}
-                    <Card className="shadow-card animate-fade-in stagger-2 opacity-0">
+                    <Card className="shadow-card animate-fade-in stagger-2 opacity-0" data-tour="expense-chart">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-lg font-semibold">
                           Expense Breakdown
@@ -244,7 +249,7 @@ const Index = () => {
                     </Card>
 
                     {/* Budget Progress */}
-                    <Card className="shadow-card animate-fade-in stagger-3 opacity-0">
+                    <Card className="shadow-card animate-fade-in stagger-3 opacity-0" data-tour="budget-progress">
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-lg font-semibold">
                           Budget Progress
@@ -273,7 +278,7 @@ const Index = () => {
                   {/* Right Column - Transactions & Actions */}
                   <div className="space-y-6">
                     {/* Quick Actions */}
-                    <Card className="shadow-card animate-fade-in stagger-1 opacity-0">
+                    <Card className="shadow-card animate-fade-in stagger-1 opacity-0" data-tour="quick-actions-main">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-lg font-semibold">
                           Quick Actions
@@ -288,7 +293,7 @@ const Index = () => {
 
 
                     {/* Recent Transactions */}
-                    <Card className="shadow-card animate-fade-in stagger-3 opacity-0">
+                    <Card className="shadow-card animate-fade-in stagger-3 opacity-0" data-tour="recent-transactions">
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-lg font-semibold">
                           Recent Transactions
@@ -353,7 +358,13 @@ const Index = () => {
         goals={goals}
         onSubmit={handleAddSavings}
       />
+
+      {/* Tour System */}
+      <TourWelcomeModal />
+      <TourOverlay />
+      <TourButton />
     </SidebarProvider>
+    </TourProvider>
   );
 };
 

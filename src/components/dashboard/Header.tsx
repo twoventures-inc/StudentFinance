@@ -177,7 +177,7 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
           </SidebarTrigger>
         </div>
 
-        <div className="hidden md:flex items-center gap-2 flex-1 max-w-md mx-8">
+        <div className="hidden md:flex items-center gap-2 flex-1 max-w-md mx-8" data-tour="search">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -192,7 +192,7 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative" data-tour="notifications">
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
                   <Badge 
@@ -300,7 +300,7 @@ export function Header({ searchQuery = "", onSearchChange }: HeaderProps) {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-tour="profile">
                 <Avatar className="h-9 w-9 border-2 border-primary/20">
                   <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
                     {getInitials()}
