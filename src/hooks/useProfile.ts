@@ -9,6 +9,7 @@ export interface Profile {
   lastName: string | null;
   currency: string;
   dateFormat: string;
+  fontFamily: string;
   budgetAlerts: boolean;
   goalReminders: boolean;
   weeklyReport: boolean;
@@ -40,6 +41,7 @@ export function useProfile() {
         lastName: data.last_name,
         currency: data.currency || 'USD',
         dateFormat: data.date_format || 'MM/DD/YYYY',
+        fontFamily: data.font_family || 'Inter',
         budgetAlerts: data.budget_alerts ?? true,
         goalReminders: data.goal_reminders ?? true,
         weeklyReport: data.weekly_report ?? false,
@@ -59,6 +61,7 @@ export function useProfile() {
       if (updates.lastName !== undefined) dbUpdates.last_name = updates.lastName;
       if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
       if (updates.dateFormat !== undefined) dbUpdates.date_format = updates.dateFormat;
+      if (updates.fontFamily !== undefined) dbUpdates.font_family = updates.fontFamily;
       if (updates.budgetAlerts !== undefined) dbUpdates.budget_alerts = updates.budgetAlerts;
       if (updates.goalReminders !== undefined) dbUpdates.goal_reminders = updates.goalReminders;
       if (updates.weeklyReport !== undefined) dbUpdates.weekly_report = updates.weeklyReport;
