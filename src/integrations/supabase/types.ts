@@ -87,6 +87,7 @@ export type Database = {
           currency: string | null
           date_format: string | null
           first_name: string | null
+          font_family: string | null
           goal_reminders: boolean | null
           id: string
           last_name: string | null
@@ -101,6 +102,7 @@ export type Database = {
           currency?: string | null
           date_format?: string | null
           first_name?: string | null
+          font_family?: string | null
           goal_reminders?: boolean | null
           id: string
           last_name?: string | null
@@ -115,6 +117,7 @@ export type Database = {
           currency?: string | null
           date_format?: string | null
           first_name?: string | null
+          font_family?: string | null
           goal_reminders?: boolean | null
           id?: string
           last_name?: string | null

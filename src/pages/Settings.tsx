@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { User, DollarSign, Bell, Save, LogOut, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, DollarSign, Bell, Save, LogOut, Loader2, Palette } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { Header } from "@/components/dashboard/Header";
@@ -20,7 +20,9 @@ import { AddTransactionForm } from "@/components/forms/AddTransactionForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useTransactions } from "@/hooks/useTransactions";
+import { useFont } from "@/contexts/FontContext";
 import { currencies } from "@/hooks/useCurrency";
+import { availableFonts } from "@/lib/fonts";
 
 export default function Settings() {
   const [activeSection, setActiveSection] = useState("settings");
@@ -31,12 +33,14 @@ export default function Settings() {
   const { user, signOut } = useAuth();
   const { profile, isLoading, updateProfile } = useProfile();
   const { addTransaction } = useTransactions();
+  const { fontFamily, setFontFamily } = useFont();
 
   // Local form state
   const [firstName, setFirstName] = useState(profile?.firstName || "");
   const [lastName, setLastName] = useState(profile?.lastName || "");
   const [currency, setCurrency] = useState(profile?.currency || "USD");
   const [dateFormat, setDateFormat] = useState(profile?.dateFormat || "MM/DD/YYYY");
+  const [selectedFont, setSelectedFont] = useState(profile?.fontFamily || "Inter");
   const [notifications, setNotifications] = useState({
     budgetAlerts: profile?.budgetAlerts ?? true,
     goalReminders: profile?.goalReminders ?? true,
@@ -46,12 +50,13 @@ export default function Settings() {
   });
 
   // Update local state when profile loads
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setFirstName(profile.firstName || "");
       setLastName(profile.lastName || "");
       setCurrency(profile.currency);
       setDateFormat(profile.dateFormat);
+      setSelectedFont(profile.fontFamily);
       setNotifications({
         budgetAlerts: profile.budgetAlerts,
         goalReminders: profile.goalReminders,
@@ -60,7 +65,7 @@ export default function Settings() {
         overspendingWarnings: profile.overspendingWarnings,
       });
     }
-  });
+  }, [profile]);
 
   const handleQuickAction = (action: string) => {
     if (action === "add-income") {
@@ -88,6 +93,11 @@ export default function Settings() {
       monthlyReport: notifications.monthlyReport,
       overspendingWarnings: notifications.overspendingWarnings,
     });
+  };
+
+  const handleSaveAppearance = () => {
+    setFontFamily(selectedFont);
+    updateProfile.mutate({ fontFamily: selectedFont });
   };
 
   const handleSignOut = async () => {
@@ -180,6 +190,52 @@ export default function Settings() {
                   <Button onClick={handleSaveProfile} disabled={updateProfile.isPending}>
                     {updateProfile.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                     Save Profile
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Appearance Settings */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Palette className="h-5 w-5 text-primary" />
+                    <CardTitle>Appearance</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Customize how your dashboard looks
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Font Family</Label>
+                    <Select value={selectedFont} onValueChange={setSelectedFont}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableFonts.map((font) => (
+                          <SelectItem key={font.value} value={font.value}>
+                            <span className="flex items-center gap-2" style={{ fontFamily: font.value }}>
+                              {font.name}
+                              <span className="text-muted-foreground text-xs">— {font.description}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="rounded-lg border p-4 bg-muted/30">
+                    <p className="text-sm text-muted-foreground mb-2">Preview</p>
+                    <p className="text-lg" style={{ fontFamily: selectedFont }}>
+                      The quick brown fox jumps over the lazy dog.
+                    </p>
+                    <p className="text-2xl font-semibold mt-1" style={{ fontFamily: selectedFont }}>
+                      $1,234.56
+                    </p>
+                  </div>
+                  <Button onClick={handleSaveAppearance} disabled={updateProfile.isPending}>
+                    {updateProfile.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                    Save Appearance
                   </Button>
                 </CardContent>
               </Card>
