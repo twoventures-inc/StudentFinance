@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useEncryption } from '@/contexts/EncryptionContext';
 
 export interface Budget {
   id: string;
@@ -15,24 +16,31 @@ export function useBudgets() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isReady: encryptionReady, encryptValue, decryptValue } = useEncryption();
 
   const { data: budgets = [], isLoading } = useQuery({
-    queryKey: ['budgets', user?.id],
+    queryKey: ['budgets', user?.id, encryptionReady],
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
         .from('budgets')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      return data.map(b => ({
-        id: b.id,
-        category: b.category,
-        spent: Number(b.spent),
-        limit: Number(b.budget_limit),
-        color: b.color,
-      }));
+
+      // Decrypt category names
+      const decryptedData = await Promise.all(
+        data.map(async (b) => ({
+          id: b.id,
+          category: encryptionReady ? await decryptValue(b.category) : b.category,
+          spent: Number(b.spent),
+          limit: Number(b.budget_limit),
+          color: b.color,
+        }))
+      );
+
+      return decryptedData;
     },
     enabled: !!user,
   });
@@ -40,18 +48,24 @@ export function useBudgets() {
   const addBudget = useMutation({
     mutationFn: async (budget: Omit<Budget, 'id' | 'spent'>) => {
       if (!user) throw new Error('Not authenticated');
+
+      // Encrypt category before saving
+      const encryptedCategory = encryptionReady
+        ? await encryptValue(budget.category)
+        : budget.category;
+
       const { data, error } = await supabase
         .from('budgets')
         .insert({
           user_id: user.id,
-          category: budget.category,
+          category: encryptedCategory,
           budget_limit: budget.limit,
           color: budget.color,
           spent: 0,
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
